@@ -9,5 +9,3 @@ services:
     ports:
       - "${VITE_PORT}:4173"
     restart: always
-    volumes:
-      - .:/app
