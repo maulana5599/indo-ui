@@ -8,10 +8,11 @@ import {
 } from "@tanstack/react-query";
 import { PlusIcon, TrashBinIcon } from "../../icons";
 import { Customer, CustomerTypeRequest } from "../../types/customer.type";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import axios from "../../service/api";
 import Api from "../../service/api";
 import Swal from "sweetalert2";
+import { debounce } from "lodash-es";
 
 const queryClient = new QueryClient();
 
@@ -26,12 +27,13 @@ const Customers = () => {
 const TableCustomer = () => {
   const [open, setOpen] = useState<boolean>(false);
   const [dataTable, setDataTable] = useState<Customer[]>([] as Customer[]);
+  const [searchingCustomer, setSearchCustomer] = useState("" as string);
   const [payloadCustomer, setPayloadCustomer] = useState<CustomerTypeRequest>(
     {} as CustomerTypeRequest
   );
   const { data, isLoading, isFetching } = useQuery({
-    queryKey: ["customer"],
-    queryFn: fetchCustomer,
+    queryKey: ["customer", searchingCustomer],
+    queryFn: () => fetchCustomer(searchingCustomer),
   });
 
   const columns = [
@@ -182,6 +184,17 @@ const TableCustomer = () => {
     });
   };
 
+  const searchCustomer = (e: React.ChangeEvent<HTMLInputElement>) => {
+    debouncedSearch(e.target.value);
+  };
+
+  const debouncedSearch = useCallback(
+    debounce((value: string) => {
+      setSearchCustomer(value);
+    }, 500),
+    []
+  );
+
   useEffect(() => {
     if (isLoading === false) {
       const result: Customer[] = data?.data;
@@ -210,6 +223,7 @@ const TableCustomer = () => {
               type="text"
               placeholder="Search..."
               className="input input-underline w-56"
+              onInput={searchCustomer}
             />
           </div>
         </div>
@@ -357,9 +371,9 @@ const TableCustomer = () => {
   );
 };
 
-const fetchCustomer = async () => {
+const fetchCustomer = async (search: string) => {
   const baseUrl = import.meta.env.VITE_API_URL;
-  const response = await axios.get(`${baseUrl}/customers/get-customers`);
+  const response = await axios.get(`${baseUrl}/customers/get-customers?customer_name=${search}`);
   return response.data;
 };
 

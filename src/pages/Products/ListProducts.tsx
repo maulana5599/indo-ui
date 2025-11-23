@@ -194,7 +194,7 @@ const ListProducts = () => {
   const debouncedSearch = useCallback(
     debounce((value: string) => {
       setSearchProduct(value);
-    }, 500), // delay 500ms
+    }, 500),
     []
   );
 
