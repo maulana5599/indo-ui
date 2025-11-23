@@ -1,14 +1,15 @@
-FROM node:20-alpine
+FROM node:22-slim
 
 WORKDIR /app
 
 COPY package*.json ./
 RUN npm install
-
 COPY . .
 
 RUN npm run build
 
-EXPOSE 5173
+RUN npm install -g serve
 
-CMD ["npm", "run", "preview"]
+EXPOSE 4173
+
+CMD ["serve", "-s", "dist", "-l", "4173"]
